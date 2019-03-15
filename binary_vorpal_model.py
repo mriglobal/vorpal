@@ -56,6 +56,8 @@ print("Model predictors with coefficients greater than 0:")
 print(model_coef)
 
 os.chdir(cwd)
+#output total feature numpy array as serialized pickle file
+features.columns.values.dump(metafile.split('.')[0]+"_feature_array.pickle")
 #output sparse model coefficients
 model_coef.to_csv(metafile.split('.')[0]+"_model_coefficients.tsv",sep='\t')
 #output serialized classifier object for persistence
