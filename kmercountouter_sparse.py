@@ -2,7 +2,9 @@ from Bio import SeqIO
 from Bio.SeqUtils import GC
 from Bio.Alphabet import IUPAC
 from Bio.Seq import Seq
+import scipy.sparse
 import pandas as pd
+import pickle
 import argparse
 import os
 
@@ -47,7 +49,6 @@ refkmerdicts = {key:{} for key in range(len(refreplicon))}
 for x,replicon in enumerate(refreplicon):
     refkmerdicts[x] = kmercount(replicon,ksize)
 
-
 recdata = {key:[] for key in range(len(refstats))}
 refdirectory = myargs.seqs
 os.chdir(refdirectory)
@@ -64,20 +65,42 @@ for file in filelist:
                 recdata[i].append(r)
 
 kmerseries = {key:[] for key in refkmerdicts}
+labels = {key:[] for key in refkmerdicts}
+kmerset = {key:set(refkmerdicts[key].keys()) for key in refkmerdicts.keys()}
+kmerindex = {key:[] for key in refkmerdicts}
+
 for n in kmerseries.keys():
-    kmerseries[n].append(pd.DataFrame(pd.Series(refkmerdicts[n]),columns=[refrec[n].id]))
+    kmerseries[n].append(refkmerdicts[n])
+    labels[n].append(refrec[n].id)
 
 for repliconexample in recdata:
     for i,sequence in enumerate(recdata[repliconexample]):
-        newkmers = pd.DataFrame(pd.Series(kmercount(str(sequence.seq),ksize)),columns=[sequence.id])
-        kmerseries[repliconexample].append(newkmers)
+        kmers = kmercount(str(sequence.seq),ksize)
+        kmerseries[repliconexample].append(kmers)
+        labels[repliconexample].append(sequence.id)
+        kmerset[repliconexample].update(kmers.keys())
         print(str(i),len(sequence))
+    kmerindex[repliconexample] = {k: i for i, k in enumerate(sorted(list(kmerset[repliconexample])))}
+
+
+
+data = {key:[] for key in refkmerdicts}
+row = {key:[] for key in refkmerdicts}
+column = {key:[] for key in refkmerdicts}
 
 for n in kmerseries.keys():
-    kmerseries[n] = pd.concat(kmerseries[n],axis=1,join="outer")
+    for c,k in enumerate(kmerseries[n]):
+        for key in k.keys():
+            data[n].append(k[key])
+            column[n].append(kmerindex[n][key])
+            row[n].append(c)
+
+kmer_coo = {key:scipy.sparse.coo_matrix((data[key],(row[key],column[key])), shape=(len(labels[key]), len(kmerset[key]))) for key in kmerseries.keys()}
 
 for n in kmerseries.keys():
-    sparse_df = kmerseries[n].fillna(0).to_sparse(fill_value=0)
+    sparse_df = pd.SparseDataFrame(kmer_coo[n].tocsr()).T.fillna(0.0)
+    sparse_df.index = kmerindex[n].keys()
+    sparse_df.columns = labels[n]
     sparse_df = sparse_df[~sparse_df.index.str.contains('H|V|Y|W|D|K|B|N|M|S|R')]
     sparse_df.to_pickle(reference.split(sep='.')[0]+str(n)+"_"+str(ksize)+"mers_sparse.pickle")
 # for e in refkmerdicts:
