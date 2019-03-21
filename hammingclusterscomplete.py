@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import time
 from scipy.spatial.distance import pdist,squareform
 from scipy.cluster.hierarchy import dendrogram, linkage, fcluster, cophenet
 from collections import Counter
@@ -39,20 +40,31 @@ degen_base_num = float(myargs.n)
 pickle_file = myargs.p
 quantile=myargs.q
 
+print("Reading in kmer table as dense matrix. {}".format(time.asctime()))
 kmers = pd.read_pickle(pickle_file).to_dense()
 basekey = {tuple(sorted(values)):keys for keys,values in DNA.degenerate_map.items()}
 basekey.update({('A',):'A',('G',):'G',('C',):'C',('T',):'T'})
-hifreqkmers = kmers[kmers > 0].T.count()[kmers[kmers > 0].T.count() > kmers[kmers > 0].T.count().quantile(quantile)]
-
+print("Getting kmer counts. {}".format(time.asctime()))
+counts = pd.Series(np.count_nonzero(kmers,axis=1),index=kmers.index)
+#removing very large objects from memory
+del(kmers)
+print("Finding high frequency kmers at quantile: {}. {}".format(quantile,time.asctime()))
+hifreqkmers = counts[counts > counts.quantile(quantile)]
+print("Converting kmers to integer arrays.{}".format(time.asctime()))
 df = pd.DataFrame(hifreqkmers.index.map(dna_to_numeric))
 
 vectordf = df[0].apply(lambda x:list(map(int,x)))
 
 final = pd.DataFrame(vectordf)[0].apply(pd.Series)
+#removing more garbage from memory
+del(df)
+del(vectordf)
+print("Performing hamming distance analysis on high frequency kmers. {}".format(time.asctime()))
 
 kmerdist = pdist(final,'hamming')
 
 
+print("Building kmer tree using average linkage with an average number of allowed based of: {} {}".format(degen_base_num,time.asctime()))
 Z = linkage(kmerdist, 'average')
 kmer_length=final.shape[1]
 maxdist=round((degen_base_num/kmer_length) + .01 , 2)
@@ -70,6 +82,7 @@ for amp in Counter(clusters).keys():
 # for c in clustergroups:
 #     output.append((list(c.index),list(c.sum()[c.sum() > c.sum().quantile(.995)].index)))
 
+print("Building alignments for kmer motifs. {}".format(time.asctime()))
 alignments = []
 for c in clustergroups:
     group = [DNA(''.join(c.loc[i].map(numeric_to_dna))) for i in c.index]
@@ -85,7 +98,7 @@ for n,a in enumerate(alignments):
 # for alignment in alignments:
 #     for sequence in alignment:
 #         kmercoverage[str(sequence)] = kmers.T[kmers.T[str(sequence)] > 0][str(sequence)].index
-
+print("Writing degenerate kmers as fasta file. {}".format(time.asctime()))
 # pickle.dump(kmercoverage,open(pickle_file.split(sep='.')[0]+'_'+str(degen_base_num)+'degenerate_coverage.pickle',mode='wb'))
 SeqIO.write(oligos,pickle_file.split(sep='.')[0]+str(degen_base_num)+'_degenerate_primers.fasta','fasta')
 # with open(pickle_file.split(sep='.')[0]+'_summary.txt','w') as outfile:
