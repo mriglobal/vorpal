@@ -5,7 +5,6 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from Bio.Alphabet import IUPAC
 from Bio.SeqUtils import nt_search
-from Bio.SeqUtils import MeltingTemp as mt
 import pickle
 from skbio import DNA
 import argparse
@@ -13,28 +12,16 @@ import argparse
 parser = argparse.ArgumentParser(description="Mapping Degenerate Kmers to Reference Sequences")
 parser.add_argument('-r',required=True, help="Concatenated References Fasta")
 parser.add_argument('-k',required=True, help='Degenerate Kmers Fasta')
-parser.add_argument('-t',default=54.0, help='Target Melting Temperature')
 
 myargs=parser.parse_args()
 
-
-binaries = [key for key,values in DNA.degenerate_map.items() if len(values) ==2]
-trinaries = [key for key,values in DNA.degenerate_map.items() if len(values) > 2]
-
-def tm_estimator(oligo):
-    return mt.Tm_GC(oligo,strict=False) - (2*oligo.count('N'))
-
-def pscore(primer,primerset,target_tm):
+def pscore(primer,primerset):
     setcompletion = len(primerset)/len(totalset)
-    binarycomposition = (1-(len([base for base in primer if base in binaries])/len(primer)))
-    trinarycomposition = (1-(len([base for base in primer if base in trinaries])/len(primer)))
-    melting = (1 - (tm_optimal - tm_estimator(primer))/tm_optimal)
-    return {'setcompletion':setcompletion,'binary_comp':binarycomposition,'trinary_comp':trinarycomposition,'tm':melting,'total_score':int(round((setcompletion * binarycomposition * trinarycomposition * melting * 1000),0))}
+    return {'setcompletion':setcompletion,'total_score':int(round((setcompletion* 1000),0))}
     
 
 sfile = myargs.r
 kfile = myargs.k
-tm_optimal = myargs.t
 os.chdir(os.getcwd())
 
 myseqs = list(SeqIO.parse(sfile,'fasta',IUPAC.unambiguous_dna))
@@ -51,7 +38,7 @@ for k in kmers:
 score_table = {}
 bed = []
 for primer in alignments.keys():
-    score = pscore(primer,set([k for k in alignments[primer].keys() if alignments[primer][k]]),tm_optimal)
+    score = pscore(primer,set([k for k in alignments[primer].keys() if alignments[primer][k]]))
     score_table[primer] = score
     for records in alignments[primer].items():
         if records[1]:
