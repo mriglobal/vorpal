@@ -17,6 +17,7 @@ parser.add_argument('-r',required=True, help="Concatenated References Fasta")
 parser.add_argument('-k',required=True, help='Degenerate Kmers Fasta')
 
 myargs=parser.parse_args()
+def pscore(primer,primerset):
     setcompletion = len(primerset)/len(totalset)
     return {'setcompletion':setcompletion,'total_score':int(round((setcompletion* 1000),0))}
     
