@@ -16,9 +16,7 @@ parser = argparse.ArgumentParser(description="Mapping Degenerate Kmers to Refere
 parser.add_argument('-r',required=True, help="Concatenated References Fasta")
 parser.add_argument('-k',required=True, help='Degenerate Kmers Fasta')
 
-myargs=parser.parse_args(['-r','Flu_A_seg3_test.fasta','-k','NC_0073710_17mers_sparse3.0_degenerate_primers.fasta'])
-os.chdir('/home/pdavis/Documents/RNAproject/Influenza_A/segment_3')
-def pscore(primer,primerset):
+myargs=parser.parse_args()
     setcompletion = len(primerset)/len(totalset)
     return {'setcompletion':setcompletion,'total_score':int(round((setcompletion* 1000),0))}
     
