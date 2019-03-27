@@ -19,6 +19,7 @@ parser = argparse.ArgumentParser(description="Create Degenerate Primers from Kme
 parser.add_argument('-p', required=True, help="Pickled Kmer Sparse DataFrame")
 parser.add_argument('-n', default=4.0, type=float, help="Average Number of Allowed Degenerate Bases")
 parser.add_argument('-q', default=0.95, type=float, help="Quantile of clustered Kmers")
+parser.add_argument('-c', default=0, type=int, help="Number of chunks to split matrix into for count processing. Default 0")
 myargs=parser.parse_args()
 
 os.chdir(os.getcwd())
@@ -35,17 +36,41 @@ def numeric_to_dna(s):
     new = str(new).replace('2','C')
     new = str(new).replace('3','A')
     return(new)
+    
+def get_chunks(x, num_chunks):
+     chunks=[]
+     position=0
+     for r in range(num_chunks):
+             if r != num_chunks-1:
+                     chunks.append(x[position:position+x.shape[0]//num_chunks])
+             else:
+                     chunks.append(x[position:])
+             position+=x.shape[0]//num_chunks
+     return chunks
 
 degen_base_num = float(myargs.n)
 pickle_file = myargs.p
 quantile=myargs.q
+chunks=myargs.c
 
-print("Reading in kmer table as dense matrix. {}".format(time.asctime()))
-kmers = pd.read_pickle(pickle_file).to_dense()
+print("Reading in kmer table matrix. {}".format(time.asctime()))
+kmers = pd.read_pickle(pickle_file)
 basekey = {tuple(sorted(values)):keys for keys,values in DNA.degenerate_map.items()}
 basekey.update({('A',):'A',('G',):'G',('C',):'C',('T',):'T'})
-print("Getting kmer counts. {}".format(time.asctime()))
-counts = pd.Series(np.count_nonzero(kmers,axis=1),index=kmers.index)
+if chunks:
+    print("Making {} data chunks. {}".format(chunks,time.asctime()))
+    kmer_splits = get_chunks(kmers.to_coo().tocsr(),chunks)
+    total_counts = []
+    index = 0
+    print("Getting kmer counts. {}".format(time.asctime()))
+    for split in kmer_splits:
+        split_counts = np.count_nonzero(split.todense(),axis=1).A1
+        total_counts.append(pd.Series(split_counts,index=kmers.index[index:index+len(split_counts)]))
+        index+=len(split_counts)
+    counts = pd.concat(total_counts)
+else:
+    print("Getting kmer counts. {}".format(time.asctime()))
+    counts = pd.Series(np.count_nonzero(kmers.to_dense(),axis=1),index=kmers.index)
 #removing very large objects from memory
 del(kmers)
 print("Finding high frequency kmers at quantile: {}. {}".format(quantile,time.asctime()))
