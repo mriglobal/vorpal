@@ -34,14 +34,17 @@ print("Building feature dict.")
 for b in beds:
     accession_num = b['chr'].unique()[0]
     feature_dict[accession_num]=b['name'].value_counts().to_dict()
-        
+
 feature_table = pd.DataFrame(feature_dict).T.fillna(0.0)
 feature_table.index.name = "accession"
 feature_table.reset_index(inplace=True)
 
+accession_set = set(feature_table['accession'])
+
 complete_table = pd.merge(feature_table,meta)
 print("Dropping ambiguous labels.")
 complete_table = complete_table[complete_table['label'] > -1]
+complete_table = complete_table[complete_table['accession'].isin(accession_set)]
 labels = complete_table['label']
 features = complete_table.drop(['accession','label'],axis=1).copy()
 print("Assigning variables.")
