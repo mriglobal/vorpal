@@ -30,6 +30,7 @@ for i in range(len(beds)):
 
 feature_dict = {}
 
+print("Building feature dict.")
 for b in beds:
     accession_num = b['chr'].unique()[0]
     feature_dict[accession_num]=b['name'].value_counts().to_dict()
@@ -39,15 +40,18 @@ feature_table.index.name = "accession"
 feature_table.reset_index(inplace=True)
 
 complete_table = pd.merge(feature_table,meta)
-
-features = complete_table.drop(['accession','taxid','pathogenic'],axis=1).copy()
-
+print("Dropping ambiguous labels.")
+complete_table = complete_table[complete_table['label'] > -1]
+labels = complete_table['label']
+features = complete_table.drop(['accession','label'],axis=1).copy()
+print("Assigning variables.")
 X = features.values
-y = meta['pathogenic']
+y = labels
 
-clf = LogisticRegressionCV(penalty='l1',solver='liblinear',tol=.000000001)
+clf = LogisticRegressionCV(Cs=5,penalty='l1',verbose=3,solver='saga',max_iter=500,n_jobs=-1,tol=.000001)
+print("Fitting model.")
 clf.fit(X,y)
-
+print("Training complete.")
 print("Trained model score (accuracy):",clf.score(X,y))
 
 model_coef = pd.Series(dict(zip(features.columns[(clf.coef_ !=0)[0]],clf.coef_[(clf.coef_ != 0)])))
@@ -61,4 +65,4 @@ features.columns.values.dump(metafile.split('.')[0]+"_feature_array.pickle")
 #output sparse model coefficients
 model_coef.to_csv(metafile.split('.')[0]+"_model_coefficients.tsv",sep='\t')
 #output serialized classifier object for persistence
-joblib.dump(metafile.split('.')[0]+"_CLF.joblib")
+joblib.dump(clf,metafile.split('.')[0]+"_CLF.joblib")
