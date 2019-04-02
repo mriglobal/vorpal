@@ -15,6 +15,7 @@ import argparse
 parser = argparse.ArgumentParser(description="Mapping Degenerate Kmers to Reference Sequences")
 parser.add_argument('-r',required=True, help="Concatenated References Fasta")
 parser.add_argument('-k',required=True, help='Degenerate Kmers Fasta')
+parser.add_argument('-t',default=os.cpu_count(),help="Number of threads. Default all.")
 
 myargs=parser.parse_args()
 def pscore(primer,primerset):
@@ -25,7 +26,7 @@ def pscore(primer,primerset):
 sfile = myargs.r
 kfile = myargs.k
 os.chdir(os.getcwd())
-cores = os.cpu_count()
+cores = myargs.t
 
 def make_splits(x, num_splits):
     splits = []

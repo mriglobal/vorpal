@@ -51,7 +51,7 @@ print("Assigning variables.")
 X = features.values
 y = labels
 
-clf = LogisticRegressionCV(Cs=5,penalty='l1',verbose=3,solver='saga',max_iter=500,n_jobs=-1,tol=.000001)
+clf = LogisticRegressionCV(Cs=5,penalty='l1',verbose=3,solver='liblinear',max_iter=500,n_jobs=-1,tol=.00000001)
 print("Fitting model.")
 clf.fit(X,y)
 print("Training complete.")
