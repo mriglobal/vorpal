@@ -10,10 +10,12 @@ parser = argparse.ArgumentParser(description="Takes feature-labeled .bed files a
 parser.add_argument('--beds',required=True,help="Directory containing .bed files.")
 parser.add_argument('-m', required=True,help="Meta data table for genomic records.")
 parser.add_argument('-o',default=os.getcwd(),help="Output directory")
+parser.add_argument('-f',type=int,default=5,help="Number of folds for cross validation.")
 myargs=parser.parse_args()
 
 cwd = myargs.o
 metafile = myargs.m
+folds = myargs.f
 # with open('Coronavirus_complete_features.txt','r') as infile:
 #     features = [r.strip() for r in infile.readlines()]
 
@@ -51,7 +53,7 @@ print("Assigning variables.")
 X = features.values
 y = labels
 
-clf = LogisticRegressionCV(Cs=5,penalty='l1',verbose=3,solver='liblinear',max_iter=500,n_jobs=-1,tol=.00000001)
+clf = LogisticRegressionCV(Cs=10,penalty='l1',verbose=3,solver='liblinear',cv=folds,max_iter=500,n_jobs=-1,tol=.00000001)
 print("Fitting model.")
 clf.fit(X,y)
 print("Training complete.")
