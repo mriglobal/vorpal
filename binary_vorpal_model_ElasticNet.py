@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import joblib
 from sklearn.model_selection import GridSearchCV
-from sklearn.linear_model import SGDclassifier
+from sklearn.linear_model import SGDClassifier
 import argparse
 
 parser = argparse.ArgumentParser(description="Takes feature-labeled .bed files and corresponding meta data as inputs to generate a sparse model of phenotype predictors.")
@@ -55,13 +55,13 @@ X = features.values
 y = labels
 
 params = {'alpha':(.1,.01,.001,.0001,.00001,.000001)}
-log_reg = SDGClassifier(loss='log',penalty='elasticnet',max_iter=1000,tol=.00000001)
-clf = GridSearchCV(log_reg,params,cv=folds)
+log_reg = SGDClassifier(loss='log',verbose=3,penalty='elasticnet',max_iter=1000,tol=.00000001)
+cv_clf = GridSearchCV(log_reg,params,cv=folds)
 print("Fitting model.")
-clf.fit(X,y)
+cv_clf.fit(X,y)
 print("Training complete.")
-print("Trained model score (accuracy):",clf.score(X,y))
-
+print("Trained model score (accuracy):",cv_clf.score(X,y))
+clf=cv_clf.best_estimator_
 model_coef = pd.Series(dict(zip(features.columns[(clf.coef_ !=0)[0]],clf.coef_[(clf.coef_ != 0)])))
 
 print("Model predictors with coefficients greater than 0:")
