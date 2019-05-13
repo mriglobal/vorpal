@@ -55,7 +55,7 @@ X = features.values
 y = labels
 
 params = {'alpha':(.1,.01,.001,.0001,.00001,.000001)}
-log_reg = SGDClassifier(loss='log',verbose=3,penalty='elasticnet',max_iter=1000,tol=.00000001)
+log_reg = SGDClassifier(n_jobs=-1,loss='log',verbose=3,penalty='elasticnet',max_iter=1000,tol=.00000001)
 cv_clf = GridSearchCV(log_reg,params,cv=folds)
 print("Fitting model.")
 cv_clf.fit(X,y)
