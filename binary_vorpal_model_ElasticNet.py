@@ -27,8 +27,8 @@ bed_files = [file for file in os.listdir() if '.bed' in file]
 
 beds = [pd.read_table(f,names=['chr','start','end','name','score']) for f in bed_files]
 
-for i in range(len(beds)):
-    beds[i]['chr'] = [a[2] for a in beds[i]['chr'].str.split('|').values]
+#for i in range(len(beds)):
+#    beds[i]['chr'] = [a[2] for a in beds[i]['chr'].str.split('|').values]
 
 
 feature_dict = {}
@@ -50,7 +50,7 @@ complete_table = complete_table[complete_table['label'] > -1]
 complete_table = complete_table[complete_table['accession'].isin(accession_set)]
 labels = complete_table['label']
 features = complete_table.drop(['accession','label'],axis=1).copy()
-print("Assigning variables.")
+print("Assigning variables for {} instances.".format(features.shape[0]))
 X = features.values
 y = labels
 
