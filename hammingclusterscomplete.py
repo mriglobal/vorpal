@@ -73,8 +73,11 @@ else:
     counts = pd.Series(np.count_nonzero(kmers.to_dense(),axis=1),index=kmers.index)
 #removing very large objects from memory
 del(kmers)
-print("Finding high frequency kmers at quantile: {}. {}".format(quantile,time.asctime()))
-hifreqkmers = counts[counts > counts.quantile(quantile)]
+if quantile != 0.0:
+    print("Finding high frequency kmers at quantile: {}. {}".format(quantile,time.asctime()))
+    hifreqkmers = counts[counts > counts.quantile(quantile)]
+else:
+    hifreqkmers = counts
 print("Converting kmers to integer arrays.{}".format(time.asctime()))
 df = pd.DataFrame(hifreqkmers.index.map(dna_to_numeric))
 
@@ -123,7 +126,7 @@ for n,a in enumerate(alignments):
 # for alignment in alignments:
 #     for sequence in alignment:
 #         kmercoverage[str(sequence)] = kmers.T[kmers.T[str(sequence)] > 0][str(sequence)].index
-print("Writing degenerate kmers as fasta file. {}".format(time.asctime()))
+print("Writing {} degenerate kmers as fasta file. {}".format(len(oligos),time.asctime()))
 # pickle.dump(kmercoverage,open(pickle_file.split(sep='.')[0]+'_'+str(degen_base_num)+'degenerate_coverage.pickle',mode='wb'))
 SeqIO.write(oligos,pickle_file.split(sep='.')[0]+str(degen_base_num)+'_degenerate_primers.fasta','fasta')
 # with open(pickle_file.split(sep='.')[0]+'_summary.txt','w') as outfile:
