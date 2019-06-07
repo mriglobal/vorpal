@@ -73,11 +73,8 @@ else:
     counts = pd.Series(np.count_nonzero(kmers.to_dense(),axis=1),index=kmers.index)
 #removing very large objects from memory
 del(kmers)
-if quantile != 0.0:
-    print("Finding high frequency kmers at quantile: {}. {}".format(quantile,time.asctime()))
-    hifreqkmers = counts[counts > counts.quantile(quantile)]
-else:
-    hifreqkmers = counts
+print("Finding high frequency kmers at quantile: {}. {}".format(quantile,time.asctime()))
+hifreqkmers = counts[counts > counts.quantile(quantile)]
 print("Converting kmers to integer arrays.{}".format(time.asctime()))
 df = pd.DataFrame(hifreqkmers.index.map(dna_to_numeric))
 
