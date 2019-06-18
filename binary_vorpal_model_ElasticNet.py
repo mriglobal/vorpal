@@ -12,6 +12,7 @@ parser.add_argument('--beds',required=True,help="Directory containing .bed files
 parser.add_argument('-m', required=True,help="Meta data table for genomic records.")
 parser.add_argument('-o',default=os.getcwd(),help="Output directory")
 parser.add_argument('-f',type=int,default=5,help="Number of folds for cross validation.")
+parser.add_argument('--RVDB',action='store_true',default=False,help='Flag for RDVB fasta headers.')
 myargs=parser.parse_args()
 
 cwd = myargs.o
@@ -27,8 +28,9 @@ bed_files = [file for file in os.listdir() if '.bed' in file]
 
 beds = [pd.read_table(f,names=['chr','start','end','name','score']) for f in bed_files]
 
-#for i in range(len(beds)):
-#    beds[i]['chr'] = [a[2] for a in beds[i]['chr'].str.split('|').values]
+if myargs.RVDB:
+    for i in range(len(beds)):
+        beds[i]['chr'] = [a[2] for a in beds[i]['chr'].str.split('|').values]
 
 
 feature_dict = {}
