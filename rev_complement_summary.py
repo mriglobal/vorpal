@@ -22,4 +22,4 @@ rev_comp_ratio = len(rev_comp_set)/len(feature_set)
 with open(myargs.f.replace(".pickle","_complement_stats.txt"),'w') as outfile:
     outfile.write("Ratio of reverse complement motifs to total motifs in feature array: {}".format(rev_comp_ratio))
 
-pd.Series(list(rev_comp_set)).to_csv(myargs.f.replace(".pickle","_rev_comp.txt",sep='\t',index=False))
+pd.Series(list(rev_comp_set)).to_csv(myargs.f.replace(".pickle","_rev_comp.txt"),sep='\t',index=False)
