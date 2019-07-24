@@ -14,14 +14,14 @@ parser.add_argument('-f',type=int,default=5,help="Number of folds for cross vali
 parser.add_argument('--RVDB',action='store_true',default=False,help="Flag for RVDB fasta headers.")
 myargs=parser.parse_args()
 
-cwd = myargs.o
+cwd = os.path.abspath(myargs.o)
 metafile = myargs.m
 folds = myargs.f
 # with open('Coronavirus_complete_features.txt','r') as infile:
 #     features = [r.strip() for r in infile.readlines()]
 
 meta = pd.read_table(metafile)
-os.chdir(os.getcwd()+os.path.join(myargs.beds))
+os.chdir(myargs.beds)
 
 bed_files = [file for file in os.listdir() if '.bed' in file]
 
