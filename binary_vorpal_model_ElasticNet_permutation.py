@@ -1,6 +1,5 @@
 import os
 import pandas as pd
-import joblib
 from sklearn.model_selection import GridSearchCV, permutation_test_score
 from sklearn.linear_model import SGDClassifier
 import argparse
@@ -65,8 +64,11 @@ cv_clf = GridSearchCV(log_reg,params,cv=folds)
 print("Fitting model.")
 score, permutation_scores, pvalue = permutation_test_score(cv_clf, X, y, scoring='accuracy', cv=folds, n_permutations=myargs.p, n_jobs=myargs.t2)
 print("Training complete.")
-print("Trained model score (accuracy):", score)
-print("Accuracy score P-value:", pvalue)
+os.chdir(cwd)
+with open(metafile+"_permutation_test_score.txt",'w') as outfile:
+	outfile.write("Trained model score (accuracy): {}, P-Value: {} \n".format(score, pvalue))
+	outfile.write("Permutation scores:")
+	outfile.write('\n'.join(permutation_scores))
 #clf=cv_clf.best_estimator_
 #model_coef = pd.Series(dict(zip(features.columns[(clf.coef_ !=0)[0]],clf.coef_[(clf.coef_ != 0)])))
 

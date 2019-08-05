@@ -1,6 +1,5 @@
 import os
 import pandas as pd
-import joblib
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.model_selection import permutation_test_score
 import argparse
@@ -12,6 +11,9 @@ parser.add_argument('--beds',required=True,help="Directory containing .bed files
 parser.add_argument('-m', required=True,help="Meta data table for genomic records.")
 parser.add_argument('-o',default=os.getcwd(),help="Output directory")
 parser.add_argument('-f',type=int,default=5,help="Number of folds for cross validation.")
+parser.add_argument('-p',type=int,default=100,help="Number of permutation tests to perform.")
+parser.add_argument('--t1',type=int,default=-1,help="Threads to pass to classifier object for joblib backend.")
+parser.add_argument('--t2',type=int,default=-1,help="Threads to pass to permutation test for joblib backend.")
 parser.add_argument('--RVDB',action='store_true',default=False,help="Flag for RVDB fasta headers.")
 myargs=parser.parse_args()
 
@@ -56,11 +58,15 @@ print("Assigning variables.")
 X = features.values
 y = labels
 
-clf = LogisticRegressionCV(Cs=10,penalty='l1',verbose=0,solver='liblinear',cv=folds,max_iter=500,n_jobs=-1,tol=.00000001)
+clf = LogisticRegressionCV(Cs=10,penalty='l1',verbose=0,solver='liblinear',cv=folds,max_iter=500,n_jobs=myargs.t2,tol=.00000001)
 print("Fitting model.")
-score, permutation_scores, pvalue = permutation_test_score(clf, X, y, scoring='accuracy', cv=folds, n_permutations=100, n_jobs=-1)
+score, permutation_scores, pvalue = permutation_test_score(clf, X, y, scoring='accuracy', cv=folds, n_permutations=myargs.p, n_jobs=myargs.t2)
 print("Training complete.")
-print("Trained model score (accuracy):",score, pvalue)
+os.chdir(cwd)
+with open(metafile+"_permutation_test_score.txt",'w') as outfile:
+	outfile.write("Trained model score (accuracy): {}, P-Value: {} \n".format(score, pvalue))
+	outfile.write("Permutation scores:")
+	outfile.write('\n'.join(permutation_scores))
 
 #model_coef = pd.Series(dict(zip(features.columns[(clf.coef_ !=0)[0]],clf.coef_[(clf.coef_ != 0)])))
 
