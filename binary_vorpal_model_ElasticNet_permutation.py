@@ -12,6 +12,9 @@ parser.add_argument('--beds',required=True,help="Directory containing .bed files
 parser.add_argument('-m', required=True,help="Meta data table for genomic records.")
 parser.add_argument('-o',default=os.getcwd(),help="Output directory")
 parser.add_argument('-f',type=int,default=5,help="Number of folds for cross validation.")
+parser.add_argument('-p',type=int,default=100,help="Number of permutation tests to perform.")
+parser.add_argument('--t1',type=int,default=-1,help="Threads to pass to classifier object for joblib backend.")
+parser.add_argument('--t2',type=int,default=-1,help="Threads to pass to permutation test for joblib backend.")
 parser.add_argument('--RVDB',action='store_true',default=False,help='Flag for RDVB fasta headers.')
 myargs=parser.parse_args()
 
@@ -57,10 +60,10 @@ X = features.values
 y = labels
 
 params = {'alpha':(.1,.01,.001,.0001,.00001,.000001)}
-log_reg = SGDClassifier(n_jobs=-1,loss='log',verbose=0,penalty='elasticnet',max_iter=1000,tol=.00000001)
+log_reg = SGDClassifier(n_jobs=myargs.t1,loss='log',verbose=0,penalty='elasticnet',max_iter=1000,tol=.00000001)
 cv_clf = GridSearchCV(log_reg,params,cv=folds)
 print("Fitting model.")
-score, permutation_scores, pvalue = permutation_test_score(cv_clf, X, y, scoring='accuracy', cv=folds, n_permutations=200, n_jobs=-1)
+score, permutation_scores, pvalue = permutation_test_score(cv_clf, X, y, scoring='accuracy', cv=folds, n_permutations=myargs.p, n_jobs=myargs.t2)
 print("Training complete.")
 print("Trained model score (accuracy):", score)
 print("Accuracy score P-value:", pvalue)
