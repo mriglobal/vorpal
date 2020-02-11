@@ -11,7 +11,7 @@ import os
 parser = argparse.ArgumentParser(description="Kmer Counter for RNA viruses")
 parser.add_argument('-r',required=True,help='Reference genome')
 parser.add_argument('--seqs', required=True,help='Folder for Sequences')
-parser.add_argument('-k', nargs='?', default=18,help='K size for counting: default 18')
+parser.add_argument('-k', nargs='?', default=17,help='K size for counting: default 17')
 parser.add_argument('-p',default=.1, type=float, help='Percent Variance in reference length for replicon binning')
 
 myargs = parser.parse_args()
