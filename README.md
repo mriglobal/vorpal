@@ -1,4 +1,7 @@
 ﻿# **Vorpal**
+<p align=center>
+<img src="vorpal_graphic.png"/>
+</p>
 A collection of scripts that implements the Vorpal RNA feature extraction algorithm.
 
 To ensure the functionality of these scripts, it is strongly advised to use the included `vorpal.yml`
@@ -15,7 +18,9 @@ You should be able to execute the scripts in the library now.
 
 ## Overview
 
- 1. kmercountouter_sparse.py
+1. kmercountouter_sparse.py
+
+This script will take a specified reference sequence, `-r`, and use the length of that sequence to bin the sequences specified in the `--seqs` directory. Those that are within the length criteria of `-p` will proceed to canonical K-mer counting where K size is specified in `-k`. The ouput will be a pickled sparse dataframe object of shape K-mers x Sequence ID. This orientation is for convenience in the high-frequency filtering stage.
 
 >     usage: kmercountouter_sparse.py [-h] -r R --seqs SEQS [-k [K]] [-p P]
 >     
@@ -30,6 +35,8 @@ You should be able to execute the scripts in the library now.
 >
 
  2. hammingclusters_fast.py
+ 
+This script will take the sparse dataframe output from `kmercountout_sparse.py` and perform hierarchical clustering on the resulting K-mers. There are many user parameters to specify. First, `-q` specifies the quantile for K-mer frequency cutoff to proceed to clustering. In other words, a .95 quantile means that only the top 5% of abundant K-mer will be clustered. The abundance calculation is defined in the manuscript. This parameter is used mostly as a tool to make calculation of the linkage function tractable given the memory requirements. The most important parameter regarding motif creation is `-n`, which specifies where the resulting tree should be cut to form clusters. The parameter is specified as average number of degenerate bases desired, and that number is converted to a fraction of the length of the K-mer size. Various additional arguments are for managing memory contraints. Memory mapping of the distance matrix with --temp allows for memory to be freed for the linkage calculation. Both the K-mer frequency counting and distance matrix calculations can been chunked as well using the `-c` and `--mem` arguments respectively.
 
 >      usage: hammingclusters_fast.py [-h] -p P [-n N] [-q Q] [-c C] [--temp TEMP]
 >                                    [--mem MEM]
@@ -47,7 +54,21 @@ You should be able to execute the scripts in the library now.
 >     --mem MEM    Amount of memory allocated to process distance matrix chunks.
 >                    (In MiB)
 
- 3.
+ 3. referencemapping_mp.py
+ 
+ This script uses a Biopython SeqUtils function to map the degenerate motifs fasta file, `-k`, resulting from `hammingclusters_fast.py`  to the concatenated sequences specified by `-r`. The resulting alignments (forward strand only) are output as a series of discrete BED format files for each unique sequence specified in `-r`, to the current working directory.
+ 
 
-
+>      usage: referencemapping_mp.py [-h] -r R -k K [-t T]
+>     
+>     Mapping Degenerate Kmers to Reference Sequences
+>     
+>     optional arguments:   -h, --help  show this help message and exit   
+>     -r R        Concatenated References Fasta   
+>     -k K        Degenerate Kmers Fasta   
+>     -t T        Number of threads. Default all.
+> 
+> 
+> 
 > Written with [StackEdit](https://stackedit.io/).
+
