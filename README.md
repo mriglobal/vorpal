@@ -49,6 +49,5 @@ You should be able to execute the scripts in the library now.
 
  3.
 
- <iframe src="Wuhan_3d_Model.html"></iframe>
 
 > Written with [StackEdit](https://stackedit.io/).
