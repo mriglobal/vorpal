@@ -27,7 +27,7 @@ You should be able to execute the scripts in the library now.
 >       --seqs SEQS  Folder for Sequences
 >       -k [K]       K size for counting: default 18
 >       -p P         Percent Variance in reference length for replicon binning
-> 
+>
 
  2. hammingclusters_fast.py
 
@@ -47,8 +47,8 @@ You should be able to execute the scripts in the library now.
 >     --mem MEM    Amount of memory allocated to process distance matrix chunks.
 >                    (In MiB)
 
- 3. 
+ 3.
+
+ <iframe src="Wuhan_3d_Model.html"></iframe>
 
 > Written with [StackEdit](https://stackedit.io/).
-
-
