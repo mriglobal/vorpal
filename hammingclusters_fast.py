@@ -32,6 +32,7 @@ if not myargs.temp and myargs.mem:
 
 os.chdir(os.getcwd())
 def dna_to_numeric(s):
+'''integer encode dna sequence'''
     new = s.replace('G','0')
     new = new.replace('T','1')
     new = new.replace('C','2')
@@ -39,6 +40,7 @@ def dna_to_numeric(s):
     return new
 
 def numeric_to_dna(s):
+'''decode integer encoding to dna sequence'''
     new = str(s).replace('0','G')
     new = str(new).replace('1','T')
     new = str(new).replace('2','C')
@@ -46,6 +48,7 @@ def numeric_to_dna(s):
     return(new)
     
 def get_chunks(x, num_chunks):
+'''generic chunking recipe'''
      chunks=[]
      position=0
      for r in range(num_chunks):
@@ -64,10 +67,12 @@ chunks=myargs.c
 
 print("Reading in kmer table matrix. {}".format(time.asctime()))
 kmers = pd.read_pickle(pickle_file)
+#set up IUPAC degenerate character look up
 basekey = {tuple(sorted(values)):keys for keys,values in DNA.degenerate_map.items()}
 basekey.update({('A',):'A',('G',):'G',('C',):'C',('T',):'T'})
 if chunks:
     print("Making {} data chunks. {}".format(chunks,time.asctime()))
+    #coo converted to csr for row-wise slicing
     kmer_splits = get_chunks(kmers.to_coo().tocsr(),chunks)
     total_counts = []
     index = 0
@@ -79,6 +84,7 @@ if chunks:
     counts = pd.concat(total_counts)
 else:
     print("Getting kmer counts. {}".format(time.asctime()))
+    #fast numpy function for getting number of kmer appearances
     counts = pd.Series(np.count_nonzero(kmers.to_dense(),axis=1),index=kmers.index)
 #removing very large objects from memory
 del(kmers)
@@ -96,6 +102,7 @@ del(vectordf)
 print("Performing hamming distance analysis on high frequency kmers. {}".format(time.asctime()))
 
 if myargs.temp:
+    #writes distance matrix to specified location
     filename = os.path.join(myargs.temp,"distance.dat")
     kmerdist=np.memmap(filename, dtype='float32',mode='w+',shape=(comb(final.shape[0],2,exact=True),))
     if myargs.mem:
@@ -118,6 +125,7 @@ if myargs.temp:
         print("Writing distance matrix to disk. {}".format(time.asctime()))
         kmerdist[:] = pdist(final,'hamming')
 else:
+    #if neither memory saving strategies are selected
     kmerdist = pdist(final,'hamming')
 
 print("Building kmer tree using average linkage with an average number of allowed based of: {} {}".format(degen_base_num,time.asctime()))
@@ -133,33 +141,20 @@ clustergroups = []
 for amp in Counter(clusters).keys():
     clustergroups.append(final.iloc[myclusters[amp]])
 
-#no idea what this was for
-# output = []
-# for c in clustergroups:
-#     output.append((list(c.index),list(c.sum()[c.sum() > c.sum().quantile(.995)].index)))
-
 print("Building alignments for kmer motifs. {}".format(time.asctime()))
+#group resulting clusters into de facto alignment objects
 alignments = []
 for c in clustergroups:
     group = [DNA(''.join(c.loc[i].map(numeric_to_dna))) for i in c.index]
     alignments.append(skbio.alignment.TabularMSA(group))
 
 oligos = []
+#find representative IUPAC base of observed positional variance
 for n,a in enumerate(alignments):
     position_vars = [tuple(set(str(x))) for x in a.iter_positions()]
     degenseq = ''.join([basekey[tuple(sorted(p))] for p in position_vars])
     oligos.append(SeqRecord(Seq(degenseq,IUPAC.ambiguous_dna),id=pickle_file.split(sep='_')[0]+str(n),description=''))
 
-# kmercoverage = {}
-# for alignment in alignments:
-#     for sequence in alignment:
-#         kmercoverage[str(sequence)] = kmers.T[kmers.T[str(sequence)] > 0][str(sequence)].index
 print("Writing {} degenerate kmers as fasta file. {}".format(len(oligos),time.asctime()))
-# pickle.dump(kmercoverage,open(pickle_file.split(sep='.')[0]+'_'+str(degen_base_num)+'degenerate_coverage.pickle',mode='wb'))
 SeqIO.write(oligos,pickle_file.split(sep='.')[0]+str(degen_base_num)+'_degenerate_primers.fasta','fasta')
-# with open(pickle_file.split(sep='.')[0]+'_summary.txt','w') as outfile:
-#     outfile.writelines(['Mean cosine distance of references :\t', str(np.mean(pdist(kmers.T,'cosine'))),'\n'])
-#     outfile.writelines(['Mean cophenetic hamming distance of hifreq ',str(kmer_length), 'mers:\t', str(np.mean(cophenet(Z))),'\n'])
-# ax = sns.heatmap(distmat)
-#pd.Series(kmerdist).plot.hist(bins=18)
 
