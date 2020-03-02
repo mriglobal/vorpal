@@ -19,6 +19,9 @@ parser.add_argument('-t',default=os.cpu_count(),type=int,help="Number of threads
 
 myargs=parser.parse_args()
 def pscore(primer,primerset):
+'''function that populates bed column number 5
+currently this is set to number of records the motif appears in
+divided by the number of total records'''
     setcompletion = len(primerset)/len(totalset)
     return {'setcompletion':setcompletion,'total_score':int(round((setcompletion* 1000),0))}
     
@@ -29,6 +32,7 @@ os.chdir(os.getcwd())
 cores = myargs.t
 
 def make_splits(x, num_splits):
+'''generic chunking recipe'''
     splits = []
     position = 0
     for r in range(num_splits):
@@ -49,12 +53,14 @@ kmers = list(SeqIO.parse(kfile,'fasta',IUPAC.ambiguous_dna))
 alignments = {}
 
 def find_alignments(kmer_list):
+'''alignment function using nt_search'''
     my_align = {}
     for k in kmer_list:
         my_align[str(k.seq)] = {r.id:nt_search(str(r.seq),str(k.seq))[1:] for r in myseqs}
     return my_align
     
 def multi_map(func, data):
+'''generic multiprocess func mapping'''
     with Pool(cores) as pool:
         kmer_splits = make_splits(kmers,cores)
         results = pool.map(func, kmer_splits)
@@ -89,5 +95,3 @@ print("Writing bed files. {}".format(time.asctime()))
 for accession in beds.groups.keys():
     beds.get_group(accession).to_csv(accession.replace('|','_')+'_primers.bed',sep='\t',header=False,index=False)
 score_df.to_csv(kfile+"_score_table.csv")
-# for seq in myseqs:
-#     alignments[seq.id] = [nt_search(str(seq.seq),str(k.seq)) for k in kmers]
