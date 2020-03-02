@@ -18,6 +18,8 @@ myargs = parser.parse_args()
 ksize = int(myargs.k)
 percent = myargs.p
 def replicontest(ref, example):
+'''test to see if given sequence should be binned
+with the reference sequence based on length'''
     refindex = 0
     for i in range(len(ref)):
         if len(example) < ref[refindex][1]+(ref[refindex][1]*percent) and len(example) > ref[refindex][1]-(ref[refindex][1]*percent):
@@ -26,6 +28,7 @@ def replicontest(ref, example):
     return -1
 
 def kmercount(replicon, k):
+'''canonical k-mer counting function'''
     kd = {}
     for j in range(len(replicon)-k):
         kmer = Seq(replicon[j:j+k],IUPAC.unambiguous_dna)
@@ -39,7 +42,9 @@ def kmercount(replicon, k):
             
 os.chdir(os.getcwd())
 reference = myargs.r
+#reference genome for binning
 refrec = list(SeqIO.parse(reference,"fasta", IUPAC.unambiguous_dna))
+#reference genome stasistics. GC content as binning criteria never implemented
 refstats = [(GC(f.seq),len(f.seq)) for f in refrec]
 refreplicon=[]
 for s in refrec:
@@ -57,7 +62,7 @@ for file in filelist:
     if ".fna" in file or ".fasta" in file:
         recordname = file.rsplit(sep="_",maxsplit=1)[0]
         records = list(SeqIO.parse(file,format="fasta", alphabet=IUPAC.unambiguous_dna))
-        #if len(records) <= len(refstats):
+        #bins sequences into groups based on provided reference. -1 indicates null group
         for r in records:
             i = replicontest(refstats, r)
             print(i)
@@ -83,7 +88,7 @@ for repliconexample in recdata:
     kmerindex[repliconexample] = {k: i for i, k in enumerate(sorted(list(kmerset[repliconexample])))}
 
 
-
+#recipe for building COO sparse data object
 data = {key:[] for key in refkmerdicts}
 row = {key:[] for key in refkmerdicts}
 column = {key:[] for key in refkmerdicts}
@@ -101,9 +106,6 @@ for n in kmerseries.keys():
     sparse_df = pd.SparseDataFrame(kmer_coo[n].tocsr()).T.fillna(0.0)
     sparse_df.index = kmerindex[n].keys()
     sparse_df.columns = labels[n]
+#remove k-mers containing ambiguous bases
     sparse_df = sparse_df[~sparse_df.index.str.contains('H|V|Y|W|D|K|B|N|M|S|R')]
     sparse_df.to_pickle(reference.split(sep='.')[0]+str(n)+"_"+str(ksize)+"mers_sparse.pickle")
-# for e in refkmerdicts:
-#     for r in recdata[e]:
-#         refkmerdicts[e] = {qkmer:refkmerdicts[e][qkmer] for qkmer in refkmerdicts[e] if qkmer in r}
-#         print(len(refkmerdicts[e]))
