@@ -32,7 +32,7 @@ if not myargs.temp and myargs.mem:
 
 os.chdir(os.getcwd())
 def dna_to_numeric(s):
-'''integer encode dna sequence'''
+    '''integer encode dna sequence'''
     new = s.replace('G','0')
     new = new.replace('T','1')
     new = new.replace('C','2')
@@ -40,7 +40,7 @@ def dna_to_numeric(s):
     return new
 
 def numeric_to_dna(s):
-'''decode integer encoding to dna sequence'''
+    '''decode integer encoding to dna sequence'''
     new = str(s).replace('0','G')
     new = str(new).replace('1','T')
     new = str(new).replace('2','C')
@@ -48,7 +48,7 @@ def numeric_to_dna(s):
     return(new)
     
 def get_chunks(x, num_chunks):
-'''generic chunking recipe'''
+    '''generic chunking recipe'''
      chunks=[]
      position=0
      for r in range(num_chunks):

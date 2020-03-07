@@ -18,7 +18,7 @@ myargs = parser.parse_args()
 ksize = int(myargs.k)
 percent = myargs.p
 def replicontest(ref, example):
-'''test to see if given sequence should be binned
+    '''test to see if given sequence should be binned
 with the reference sequence based on length'''
     refindex = 0
     for i in range(len(ref)):
@@ -28,7 +28,7 @@ with the reference sequence based on length'''
     return -1
 
 def kmercount(replicon, k):
-'''canonical k-mer counting function'''
+    '''canonical k-mer counting function'''
     kd = {}
     for j in range(len(replicon)-k):
         kmer = Seq(replicon[j:j+k],IUPAC.unambiguous_dna)

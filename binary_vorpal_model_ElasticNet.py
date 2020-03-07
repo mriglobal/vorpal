@@ -18,8 +18,6 @@ myargs=parser.parse_args()
 cwd = os.path.abspath(myargs.o)
 metafile = myargs.m
 folds = myargs.f
-# with open('Coronavirus_complete_features.txt','r') as infile:
-#     features = [r.strip() for r in infile.readlines()]
 
 meta = pd.read_table(metafile)
 os.chdir(myargs.beds)
