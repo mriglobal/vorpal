@@ -49,15 +49,15 @@ def numeric_to_dna(s):
     
 def get_chunks(x, num_chunks):
     '''generic chunking recipe'''
-     chunks=[]
-     position=0
-     for r in range(num_chunks):
-             if r != num_chunks-1:
-                     chunks.append(x[position:position+x.shape[0]//num_chunks])
-             else:
-                     chunks.append(x[position:])
-             position+=x.shape[0]//num_chunks
-     return chunks
+    chunks=[]
+    position=0
+    for r in range(num_chunks):
+        if r != num_chunks-1:
+                chunks.append(x[position:position+x.shape[0]//num_chunks])
+        else:
+                 chunks.append(x[position:])
+        position+=x.shape[0]//num_chunks
+    return chunks
 
 degen_base_num = float(myargs.n)
 pickle_file = myargs.p
