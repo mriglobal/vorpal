@@ -16,13 +16,13 @@ parser = argparse.ArgumentParser(description="Mapping Degenerate Kmers to Refere
 parser.add_argument('-r',required=True, help="Concatenated References Fasta")
 parser.add_argument('-k',required=True, help='Degenerate Kmers Fasta')
 parser.add_argument('-t',default=os.cpu_count(),type=int,help="Number of threads. Default all.")
+parser.add_argument('-c',default=1, help="Number of chunks to break references into and write to disk. (Default=1)")
 
 myargs=parser.parse_args()
 def pscore(primer,primerset):
     '''function that populates bed column number 5 currently this is set to number of records the motif appears in divided by the number of total records'''
     setcompletion = len(primerset)/len(totalset)
     return {'setcompletion':setcompletion,'total_score':int(round((setcompletion* 1000),0))}
-
 
 sfile = myargs.r
 kfile = myargs.k
@@ -48,8 +48,6 @@ totalset = set([r.id for r in myseqs])
 
 kmers = list(SeqIO.parse(kfile,'fasta',IUPAC.ambiguous_dna))
 
-alignments = {}
-
 def find_alignments(kmer_list):
     '''alignment function using nt_search'''
     my_align = {}
@@ -64,32 +62,47 @@ def multi_map(func, data):
         results = pool.map(func, kmer_splits)
         return results
 
-print("Mapping motifs with {} cores. {}".format(cores,time.asctime()))
-mapped_kmers = multi_map(find_alignments,kmers)
+if myargs.c > 1:
+    reference_splits = make_splits(myseqs,myargs.c)
+    print("Scoring metrics unavailable for chunked reference mapping.")
+    chunk_flag = True
+else:
+    reference_splits = [myseqs]
+    chunk_flag = False
 
-for m in mapped_kmers:
-    alignments.update(m)
+for refs in reference_splits:
+    alignments = {}
+    print("Mapping motifs in {} chunks with {} cores. {}".format(myargs.c,cores,time.asctime()))
+    mapped_kmers = multi_map(find_alignments,kmers)
 
-#there may be a more effecient way to do this ¯\_(ツ)_/¯
-del(mapped_kmers)
+    for m in mapped_kmers:
+        alignments.update(m)
 
-print("Building score table and bed files. {}".format(time.asctime()))
-score_table = {}
-bed = []
-for primer in alignments.keys():
-    score = pscore(primer,set([k for k in alignments[primer].keys() if alignments[primer][k]]))
-    score_table[primer] = score
-    for records in alignments[primer].items():
-        if records[1]:
-            for pos in records[1]:
-                bed.append({'chr':records[0],'start':pos,'end':pos+len(primer),'name':primer,'score':score['total_score']})
+    #there may be a more effecient way to do this ¯\_(ツ)_/¯
+    del(mapped_kmers)
 
-print(len(bed))
-score_df = pd.DataFrame(score_table).T
-bed_df = pd.DataFrame(bed)
-bed_df = bed_df[['chr','start','end','name','score']]
-beds = bed_df.groupby('chr')
-print("Writing bed files. {}".format(time.asctime()))
-for accession in beds.groups.keys():
-    beds.get_group(accession).to_csv(accession.replace('|','_')+'_primers.bed',sep='\t',header=False,index=False)
-score_df.to_csv(kfile+"_score_table.csv")
+    print("Building score table and bed files. {}".format(time.asctime()))
+    score_table = {}
+    bed = []
+    for primer in alignments.keys():
+        if not chunk_flag:
+            score = pscore(primer,set([k for k in alignments[primer].keys() if alignments[primer][k]]))
+            score_table[primer] = score
+        else:
+            score = {'total_score':1000}
+        for records in alignments[primer].items():
+            if records[1]:
+                for pos in records[1]:
+                    bed.append({'chr':records[0],'start':pos,'end':pos+len(primer),'name':primer,'score':score['total_score']})
+
+    print(len(bed))
+    if not chunk_flag:
+        score_df = pd.DataFrame(score_table).T
+        score_df.to_csv(kfile+"_score_table.csv")
+    bed_df = pd.DataFrame(bed)
+    bed_df = bed_df[['chr','start','end','name','score']]
+    beds = bed_df.groupby('chr')
+    print("Writing bed files. {}".format(time.asctime()))
+    for accession in beds.groups.keys():
+        beds.get_group(accession).to_csv(accession.replace('|','_')+'_primers.bed',sep='\t',header=False,index=False)
+
