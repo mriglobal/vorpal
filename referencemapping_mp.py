@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser(description="Mapping Degenerate Kmers to Refere
 parser.add_argument('-r',required=True, help="Concatenated References Fasta")
 parser.add_argument('-k',required=True, help='Degenerate Kmers Fasta')
 parser.add_argument('-t',default=os.cpu_count(),type=int,help="Number of threads. Default all.")
-parser.add_argument('-c',default=1, help="Number of chunks to break references into and write to disk. (Default=1)")
+parser.add_argument('-c',default=1,type = int, help="Number of chunks to break references into and write to disk. (Default=1)")
 
 myargs=parser.parse_args()
 def pscore(primer,primerset):
