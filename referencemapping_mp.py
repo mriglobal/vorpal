@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import numpy as np
+import gc
 import time
 from Bio.Seq import Seq
 from Bio import SeqIO
@@ -48,18 +49,19 @@ totalset = set([r.id for r in myseqs])
 
 kmers = list(SeqIO.parse(kfile,'fasta',IUPAC.ambiguous_dna))
 
-def find_alignments(kmer_list):
+def find_alignments(kmers):
     '''alignment function using nt_search'''
     my_align = {}
-    for k in kmer_list:
-        my_align[str(k.seq)] = {r.id:nt_search(str(r.seq),str(k.seq))[1:] for r in myseqs}
+    for k in kmers:
+        #print(k)
+        my_align[str(k.seq)] = {r.id:nt_search(str(r.seq),str(k.seq))[1:] for r in refs}
     return my_align
     
-def multi_map(func, data):
+def multi_map(func):
     '''generic multiprocess func mapping'''
     with Pool(cores) as pool:
         kmer_splits = make_splits(kmers,cores)
-        results = pool.map(func, kmer_splits)
+        results = pool.map(func,kmer_splits)
         return results
 
 if myargs.c > 1:
@@ -72,8 +74,8 @@ else:
 
 for refs in reference_splits:
     alignments = {}
-    print("Mapping motifs in {} chunks with {} cores. {}".format(myargs.c,cores,time.asctime()))
-    mapped_kmers = multi_map(find_alignments,kmers)
+    print("Mapping motifs in {}, {} sized chunks with {} cores. {}".format(myargs.c,len(refs),cores,time.asctime()))
+    mapped_kmers = multi_map(find_alignments)
 
     for m in mapped_kmers:
         alignments.update(m)
@@ -94,15 +96,17 @@ for refs in reference_splits:
             if records[1]:
                 for pos in records[1]:
                     bed.append({'chr':records[0],'start':pos,'end':pos+len(primer),'name':primer,'score':score['total_score']})
-
+    del(alignments)
     print(len(bed))
     if not chunk_flag:
         score_df = pd.DataFrame(score_table).T
         score_df.to_csv(kfile+"_score_table.csv")
     bed_df = pd.DataFrame(bed)
+    del(bed)
     bed_df = bed_df[['chr','start','end','name','score']]
     beds = bed_df.groupby('chr')
     print("Writing bed files. {}".format(time.asctime()))
     for accession in beds.groups.keys():
         beds.get_group(accession).to_csv(accession.replace('|','_')+'_primers.bed',sep='\t',header=False,index=False)
-
+    del(beds)
+    gc.collect()
