@@ -12,11 +12,15 @@ parser.add_argument('-m', required=True,help="Meta data table for genomic record
 parser.add_argument('-o',default=os.getcwd(),help="Output directory")
 parser.add_argument('-f',type=int,default=5,help="Number of folds for cross validation.")
 parser.add_argument('--RVDB',action='store_true',default=False,help="Flag for RVDB fasta headers.")
+parser.add_argument('-i',type=int,default=500,help="Number of iterations for coordinate descent.")
+parser.add_argument('-t',type=float,default=.00000001,help="Min loss tolerance for stopping. Default: .00000001")
 myargs=parser.parse_args()
 
 cwd = os.path.abspath(myargs.o)
 metafile = myargs.m
 folds = myargs.f
+iterations = myargs.i
+tolerance = myargs.t
 
 meta = pd.read_table(metafile)
 os.chdir(myargs.beds)
@@ -53,7 +57,7 @@ print("Assigning variables.")
 X = features.values
 y = labels
 
-clf = LogisticRegressionCV(Cs=10,penalty='l1',verbose=3,solver='liblinear',cv=folds,max_iter=500,n_jobs=-1,tol=.00000001)
+clf = LogisticRegressionCV(Cs=10,penalty='l1',verbose=3,solver='liblinear',cv=folds,max_iter=iterations,n_jobs=-1,tol=tolerance)
 print("Fitting model.")
 clf.fit(X,y)
 print("Training complete.")

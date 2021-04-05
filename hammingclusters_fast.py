@@ -17,6 +17,7 @@ from Bio.SeqRecord import SeqRecord
 from Bio.Alphabet import IUPAC
 import pickle
 import argparse
+import gc
 
 parser = argparse.ArgumentParser(description="Create Degenerate Primers from Kmer Clusters")
 parser.add_argument('-p', required=True, help="Pickled Kmer Sparse DataFrame")
@@ -99,6 +100,7 @@ final = pd.DataFrame(vectordf)[0].apply(pd.Series)
 #removing more garbage from memory
 del(df)
 del(vectordf)
+gc.collect()
 print("Performing hamming distance analysis on high frequency kmers. {}".format(time.asctime()))
 
 if myargs.temp:
@@ -120,6 +122,7 @@ if myargs.temp:
                 position-=1
                 remaining+=1
             del(kmerdist)
+            gc.collect()
         kmerdist=np.memmap(filename,dtype='float32',mode='r')
     else:
         print("Writing distance matrix to disk. {}".format(time.asctime()))
