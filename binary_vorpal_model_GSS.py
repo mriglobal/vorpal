@@ -58,7 +58,7 @@ complete_table = complete_table[complete_table['label'] > -1]
 complete_table = complete_table[complete_table['accession'].isin(accession_set)]
 labels = complete_table['label']
 groups = complete_table['groups']
-features = complete_table.drop(['accession','label','groups',],axis=1).copy()
+features = complete_table.drop(['accession','label','groups','species'],axis=1).copy()
 print("Assigning variables.")
 X = features.values
 y = labels
