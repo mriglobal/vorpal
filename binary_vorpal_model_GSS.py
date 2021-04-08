@@ -60,7 +60,7 @@ complete_table = complete_table[complete_table['label'] > -1]
 complete_table = complete_table[complete_table['accession'].isin(accession_set)]
 labels = complete_table['label']
 groups = complete_table['groups']
-features = complete_table.drop(['accession','label','groups',],axis=1).copy()
+features = complete_table.drop(['accession','label','groups','species'],axis=1).copy()
 print("Assigning variables.")
 X = features.values
 y = labels
@@ -70,7 +70,7 @@ gss = GroupShuffleSplit(n_splits=myargs.n,test_size=.1)
 #parameters = {'C':[.00001,.0001,.001,.01,.1,1,10,100,1000,10000]} #Cs:10
 parameters = {'C':[.01,.1,1,10,100,1000,10000]}
 logit = LogisticRegression(penalty='l1',verbose=1,solver='liblinear',max_iter=iterations,tol=tolerance,fit_intercept=False)
-clf = GridSearchCV(logit,parameters,scoring='neg_log_loss',cv=gss,n_jobs=cpus,return_train_score=False)
+clf = GridSearchCV(logit,parameters,scoring='brier_score_loss',cv=gss,n_jobs=cpus,return_train_score=False)
 print("Fitting model.")
 clf.fit(X,y,groups=groups)
 print("Training complete.")
