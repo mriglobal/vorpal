@@ -5,6 +5,7 @@ from sklearn.linear_model import LogisticRegressionCV
 from sklearn.model_selection import GridSearchCV
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GroupShuffleSplit
+from sklearn.metrics import accuracy_score
 import argparse
 
 parser = argparse.ArgumentParser(description="Takes feature-labeled .bed files and corresponding meta data as inputs to generate a sparse model of phenotype predictors.")
@@ -13,9 +14,11 @@ parser = argparse.ArgumentParser(description="Takes feature-labeled .bed files a
 parser.add_argument('--beds',required=True,help="Directory containing .bed files.")
 parser.add_argument('-m', required=True,help="Meta data and groups table for genomic records.")
 parser.add_argument('-o',default=os.getcwd(),help="Output directory")
-parser.add_argument('-s',type=int,default=0.10,help="Fraction size for group splits. Default: 0.10.")
+parser.add_argument('-s',type=float,default=0.10,help="Fraction size for group splits. Default: 0.10.")
+parser.add_argument('-n',type=int,default=100,help="Number of splits for groups splits. Default: 200")
 parser.add_argument('--RVDB',action='store_true',default=False,help="Flag for RVDB fasta headers.")
 parser.add_argument('-i',type=int,default=500,help="Number of iterations for coordinate descent.")
+parser.add_argument('-p',type=int,default=os.cpu_count(),help="Number of processors to use. Default: Max available")
 parser.add_argument('-t',type=float,default=.00000001,help="Min loss tolerance for stopping. Default: .00000001")
 myargs=parser.parse_args()
 
@@ -24,11 +27,10 @@ metafile = myargs.m
 split_size = myargs.s
 iterations = myargs.i
 tolerance = myargs.t
+cpus = myargs.p
 
 meta = pd.read_table(metafile)
 os.chdir(myargs.beds)
-
-gss = GroupShuffleSplit(n_splits=200,test_size=.1)
 
 bed_files = [file for file in os.listdir() if '.bed' in file]
 
@@ -52,7 +54,7 @@ feature_table.reset_index(inplace=True)
 
 accession_set = set(feature_table['accession'])
 
-complete_table = pd.merge(feature_table,meta)
+complete_table = pd.merge(feature_table,meta,left_on='accession',right_on='accession')
 print("Dropping ambiguous labels.")
 complete_table = complete_table[complete_table['label'] > -1]
 complete_table = complete_table[complete_table['accession'].isin(accession_set)]
@@ -62,14 +64,17 @@ features = complete_table.drop(['accession','label','groups',],axis=1).copy()
 print("Assigning variables.")
 X = features.values
 y = labels
+print(features)
+gss = GroupShuffleSplit(n_splits=myargs.n,test_size=.1)
 
-parameters = {'C':[.00001,.0001,.001,.01,.1,1,10,100,1000,10000]} #Cs:10
-logit = LogisticRegression(penalty='l1',verbose=1,solver='liblinear',max_iter=iterations,n_jobs=-1,tol=tolerance)
-clf = GridSearchCV(logit,parameters,scoring='accuracy',cv=gss,n_jobs=-1,return_train_score=False)
+#parameters = {'C':[.00001,.0001,.001,.01,.1,1,10,100,1000,10000]} #Cs:10
+parameters = {'C':[.01,.1,1,10,100,1000,10000]}
+logit = LogisticRegression(penalty='l1',verbose=1,solver='liblinear',max_iter=iterations,tol=tolerance,fit_intercept=False)
+clf = GridSearchCV(logit,parameters,scoring='neg_log_loss',cv=gss,n_jobs=cpus,return_train_score=False)
 print("Fitting model.")
 clf.fit(X,y,groups=groups)
 print("Training complete.")
-print("Trained model score (accuracy):",clf.score(X,y))
+print("Trained model score (accuracy):",accuracy_score(y,clf.predict(X)))
 
 cv_results = pd.DataFrame(clf.cv_results_).sort_values('mean_test_score')
 print("Max mean CV score: {}".format(cv_results['mean_test_score'].max()))
