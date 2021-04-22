@@ -20,16 +20,14 @@ parser.add_argument('-s',type=float,default=0.10,help="Fraction size for group s
 parser.add_argument('-n',type=int,default=100,help="Number of splits for groups splits. Default: 100")
 parser.add_argument('--RVDB',action='store_true',default=False,help="Flag for RVDB fasta headers.")
 parser.add_argument('-j',required=True,help="JSON file containing Grid Search parameters.")
-parser.add_argument('-p',type=int,default=-1,help="Number of processors to use. Default: Max available")
-
+#parser.add_argument('-p',type=int,default=-1,help="Number of processors to use. Default: Max available")
+myargs=parser.parse_args()
 
 cwd = myargs.o
-out_prefix = os.path.join(myargs.o,metafile.split('.')[0]+os.path.basename(myargs.j).split('.')[0])
 metafile = myargs.m
+out_prefix = os.path.join(myargs.o,metafile.split('.')[0]+os.path.basename(myargs.j).split('.')[0])
 split_size = myargs.s
-iterations = myargs.i
-tolerance = myargs.t
-cpus = myargs.p
+#cpus = myargs.p
 
 meta = pd.read_table(metafile)
 os.chdir(myargs.beds)
@@ -74,7 +72,7 @@ with open(myargs.j,'r') as infile:
 	parameters = json.load(infile)
 
 tree = XGBClassifier(booster='gbtree',tree_method='gpu_hist',verbosity=2,objective="binary:logistic")
-clf = GridSearchCV(tree,parameters,scoring='brier_score_loss',cv=gss,n_jobs=cpus,return_train_score=False)
+clf = GridSearchCV(tree,parameters,scoring='brier_score_loss',cv=gss,n_jobs=1,return_train_score=False)
 print("Fitting model.")
 clf.fit(X,y,groups=groups)
 print("Training complete.")
