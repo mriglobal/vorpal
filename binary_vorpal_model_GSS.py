@@ -6,6 +6,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GroupShuffleSplit
 from sklearn.metrics import accuracy_score
+from sklearn.utils import resample
 import argparse
 
 parser = argparse.ArgumentParser(description="Takes feature-labeled .bed files and corresponding meta data as inputs to generate a sparse model of phenotype predictors.")
@@ -20,6 +21,7 @@ parser.add_argument('--RVDB',action='store_true',default=False,help="Flag for RV
 parser.add_argument('-i',type=int,default=500,help="Number of iterations for coordinate descent.")
 parser.add_argument('-p',type=int,default=os.cpu_count(),help="Number of processors to use. Default: Max available")
 parser.add_argument('-t',type=float,default=.00000001,help="Min loss tolerance for stopping. Default: .00000001")
+parser.add_argument('-r',type=int,default=0,help="Number of resampled rows using stratified groups. (Default is no resample)")
 myargs=parser.parse_args()
 
 cwd = os.path.abspath(myargs.o)
@@ -58,6 +60,10 @@ complete_table = pd.merge(feature_table,meta,left_on='accession',right_on='acces
 print("Dropping ambiguous labels.")
 complete_table = complete_table[complete_table['label'] > -1]
 complete_table = complete_table[complete_table['accession'].isin(accession_set)]
+if myargs.r:
+    print("Resampling training data {} times.".format(myargs.r))
+    complete_table = resample(complete_table,n_samples=myargs.r,stratify=complete_table['groups'])
+
 labels = complete_table['label']
 groups = complete_table['groups']
 features = complete_table.drop(['accession','label','groups','species'],axis=1).copy()
