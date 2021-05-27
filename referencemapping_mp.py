@@ -57,13 +57,6 @@ def find_alignments(kmers):
         my_align[str(k.seq)] = {r.id:nt_search(str(r.seq),str(k.seq))[1:] for r in refs}
     return my_align
     
-def multi_map(func):
-    '''generic multiprocess func mapping'''
-    with Pool(cores) as pool:
-        kmer_splits = make_splits(kmers,cores)
-        results = pool.map(func,kmer_splits)
-        return results
-
 if myargs.c > 1:
     reference_splits = make_splits(myseqs,myargs.c)
     print("Scoring metrics unavailable for chunked reference mapping.")
@@ -75,8 +68,10 @@ else:
 for refs in reference_splits:
     alignments = {}
     print("Mapping motifs in {}, {} sized chunks with {} cores. {}".format(myargs.c,len(refs),cores,time.asctime()))
-    mapped_kmers = multi_map(find_alignments)
-
+    with Pool(cores) as pool:
+        kmer_splits = make_splits(kmers,cores)
+        mapped_kmers = pool.map(find_alignments,kmer_splits)
+    
     for m in mapped_kmers:
         alignments.update(m)
 
@@ -109,4 +104,6 @@ for refs in reference_splits:
     for accession in beds.groups.keys():
         beds.get_group(accession).to_csv(accession.replace('|','_')+'_primers.bed',sep='\t',header=False,index=False)
     del(beds)
+    del(bed_df)
+    del(refs)
     gc.collect()
