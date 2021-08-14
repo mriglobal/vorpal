@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser(description="Takes feature-labeled .bed files a
 #command line arguments
 parser.add_argument('--beds',required=True,help="Directory containing .bed files.")
 parser.add_argument('-m', required=True,help="Meta data and groups table for genomic records.")
-parser.add_argument('-o',default=os.getcwd(),help="Output directory")
+parser.add_argument('-o',default='',help="Prefix for output files.")
 parser.add_argument('-s',type=float,default=0.10,help="Fraction size for group splits. Default: 0.10.")
 parser.add_argument('-n',type=int,default=100,help="Number of splits for groups splits. Default: 200")
 parser.add_argument('--RVDB',action='store_true',default=False,help="Flag for RVDB fasta headers.")
@@ -24,8 +24,12 @@ parser.add_argument('-t',type=float,default=.00000001,help="Min loss tolerance f
 parser.add_argument('-r',type=int,default=0,help="Number of resampled rows using stratified groups. (Default is no resample)")
 myargs=parser.parse_args()
 
-cwd = os.path.abspath(myargs.o)
+cwd = os.getcwd()
 metafile = myargs.m
+if not myargs.o:
+    out_prefix = os.path.basename(metafile.split('.')[0])
+else:
+    out_prefix = myargs.o
 split_size = myargs.s
 iterations = myargs.i
 tolerance = myargs.t
@@ -94,9 +98,9 @@ print(model_coef)
 
 os.chdir(cwd)
 #output total feature numpy array as serialized pickle file
-features.columns.values.dump(metafile.split('.')[0]+"_feature_array.pickle")
+features.columns.values.dump(out_prefix+"_feature_array.pickle")
 #output sparse model coefficients
-model_coef.to_csv(metafile.split('.')[0]+"_model_coefficients.tsv",sep='\t')
-cv_results.to_csv(metafile.split('.')[0]+"_cv_results.tsv",sep='\t')
+model_coef.to_csv(out_prefix+"_model_coefficients.tsv",sep='\t')
+cv_results.to_csv(out_prefix+"_cv_results.tsv",sep='\t')
 #output serialized classifier object for persistence
-joblib.dump(clf,metafile.split('.')[0]+"_CLF.joblib")
+joblib.dump(clf,out_prefix+"_CLF.joblib")
