@@ -59,9 +59,9 @@ def kmercount(replicon, k):
             kd[str(kmer.reverse_complement())]=1
     return kd
             
-os.chdir(os.getcwd())
+cwd = os.getcwd()
 reference = myargs.r
-output_prefix = reference.split(sep='.')[0]+"_"+str(ksize)+"mers_"
+output_prefix = os.path.basename(reference).split(sep='.')[0]+"_"+str(ksize)+"mers"
 
 #reference genome for binning
 refrec = list(SeqIO.parse(reference,"fasta", IUPAC.unambiguous_dna))
@@ -97,7 +97,7 @@ if myargs.n:
         rec_dict[i] = {get_accession(s.id):s for s in recdata[i]}
         group_labels = [groups_dict[seq_id] for seq_id in rec_dict[i]]
         stratified = resample(pd.Series([seq_id for seq_id in rec_dict[i]]),n_samples=myargs.n,stratify=group_labels)
-        recdata[i] = [rec_dict[seq_id] for seq_id in stratified]
+        recdata[i] = [rec_dict[i][seq_id] for seq_id in stratified]
 
 
 kmerseries = {key:[] for key in refkmerdicts}
@@ -133,6 +133,7 @@ for n in kmerseries.keys():
 
 kmer_coo = {key:scipy.sparse.coo_matrix((data[key],(row[key],column[key])), shape=(len(kmerseries[key]), len(kmerset[key]))) for key in kmerseries.keys()}
 
+os.chdir(cwd)
 for n in kmerseries.keys():
     out_name = output_prefix+"_"+str(n)
     if myargs.n:
@@ -142,4 +143,4 @@ for n in kmerseries.keys():
     #sparse_df.columns = labels[n]
 #remove k-mers containing ambiguous bases
     sparse_df = sparse_df[~sparse_df.index.str.contains('H|V|Y|W|D|K|B|N|M|S|R')]
-    sparse_df.to_pickle(out_name+str(n)+"_sparse.pickle")
+    sparse_df.to_pickle(out_name+"_sparse.pickle")
