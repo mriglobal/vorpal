@@ -9,15 +9,19 @@ parser = argparse.ArgumentParser(description="Takes feature-labeled .bed files a
 #command line arguments
 parser.add_argument('--beds',required=True,help="Directory containing .bed files.")
 parser.add_argument('-m', required=True,help="Meta data table for genomic records.")
-parser.add_argument('-o',default=os.getcwd(),help="Output directory")
+parser.add_argument('-o',default='',help="Prefix for output files.")
 parser.add_argument('-f',type=int,default=5,help="Number of folds for cross validation.")
 parser.add_argument('--RVDB',action='store_true',default=False,help="Flag for RVDB fasta headers.")
 parser.add_argument('-i',type=int,default=500,help="Number of iterations for coordinate descent.")
 parser.add_argument('-t',type=float,default=.00000001,help="Min loss tolerance for stopping. Default: .00000001")
 myargs=parser.parse_args()
 
-cwd = os.path.abspath(myargs.o)
+cwd = os.getcwd()
 metafile = myargs.m
+if not myargs.o:
+    out_prefix = os.path.basename(metafile.split('.')[0])
+else:
+    out_prefix = myargs.o
 folds = myargs.f
 iterations = myargs.i
 tolerance = myargs.t
@@ -70,8 +74,8 @@ print(model_coef)
 
 os.chdir(cwd)
 #output total feature numpy array as serialized pickle file
-features.columns.values.dump(metafile.split('.')[0]+"_feature_array.pickle")
+features.columns.values.dump(out_prefix+"_feature_array.pickle")
 #output sparse model coefficients
-model_coef.to_csv(metafile.split('.')[0]+"_model_coefficients.tsv",sep='\t')
+model_coef.to_csv(out_prefix+"_model_coefficients.tsv",sep='\t')
 #output serialized classifier object for persistence
-joblib.dump(clf,metafile.split('.')[0]+"_CLF.joblib")
+joblib.dump(clf,out_prefix+"_CLF.joblib")
