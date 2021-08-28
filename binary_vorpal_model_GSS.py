@@ -16,7 +16,7 @@ parser.add_argument('--beds',required=True,help="Directory containing .bed files
 parser.add_argument('-m', required=True,help="Meta data and groups table for genomic records.")
 parser.add_argument('-o',default='',help="Prefix for output files.")
 parser.add_argument('-s',type=float,default=0.10,help="Fraction size for group splits. Default: 0.10.")
-parser.add_argument('-n',type=int,default=100,help="Number of splits for groups splits. Default: 200")
+parser.add_argument('-n',type=int,default=100,help="Number of splits for groups splits. Default: 100")
 parser.add_argument('--RVDB',action='store_true',default=False,help="Flag for RVDB fasta headers.")
 parser.add_argument('-i',type=int,default=500,help="Number of iterations for coordinate descent.")
 parser.add_argument('-p',type=int,default=os.cpu_count(),help="Number of processors to use. Default: Max available")
