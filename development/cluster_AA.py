@@ -29,19 +29,19 @@ parser.add_argument('-a', '--aminos_file', type=is_file, default='amino_acid_dat
 parser.add_argument('-o', '--out_prefix', type=str, default='amino_DBscan_clustering',
                     help='prefix of output .json file')
 parser.add_argument('-u', '--umap_neighbors', type=int, default=2,
-                    help='number of neighbors for UMAP to consider')
+                    help='number of neighbors for UMAP to consider (default:2)')
 
 # Params for DBScan
 parser.add_argument('-m', '--min_samples', type=int, default=2,
                     help='min_samples for DBscan (points to be considered core point)')
 parser.add_argument('-e', '--eps', type=float, default=.7,
-                    help='epsilon parameter for DBscan')
+                    help='epsilon parameter for DBscan (default .7)')
 parser.add_argument('-g', '--algorithm', type=str, default='auto',
                     help='algorithm parameter for DBscan')
 parser.add_argument('-p', '--metric_params', default=None,
                     help='Additional kwargs for DBscan')
 parser.add_argument('-l', '--leaf_size', type=int, default=30,
-                    help='Leaf size for DBscan')
+                    help='Leaf size for DBscan (default:30)')
 parser.add_argument('-x', '--metric', type=str, default='euclidean',
                     help='distance metric for DBscan')
 
