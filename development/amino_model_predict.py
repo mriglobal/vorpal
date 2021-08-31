@@ -4,7 +4,7 @@ import numpy as np
 from Bio import SeqIO
 from skbio import Protein
 import joblib
-from sklearn.metrics import Binarizer
+from sklearn.preprocessing import Binarizer
 from sklearn.metrics import accuracy_score
 from collections import Counter
 import json
@@ -17,7 +17,7 @@ parser.add_argument('--seqs',required=True,help="File containing CDS data.")
 parser.add_argument('-m', help="Meta data and groups table for genomic records.")
 parser.add_argument('--model',required=True,help='Joblib file for sklearn classifier object.')
 parser.add_argument('-f',required=True, help='Feature Array object for accompanying model.')
-parser.add_argument('-b',action='store_true',default=false,help='Flag for feature vector binarization.')
+parser.add_argument('-b',action='store_true',default=False,help='Flag for feature vector binarization.')
 parser.add_argument('-o',default='',help="Prefix for output files.")
 parser.add_argument('-k',default=6,type=int,help="Amino word K size. Default:6")
 parser.add_argument('-j',default=None,help="Amino acid translation dictionary in json format. Default: No re-encoding")
@@ -111,8 +111,8 @@ else:
 
 if myargs.b:
     print("Binarizing features.")
-    transformer = Binarizer.fit(X)
-    X = transformer.transform(X)
+    transformer = Binarizer()
+    X = transformer.fit_transform(X)
 
 data['predict'] = clf.predict(X)
 data['predict_proba'] = clf.predict_proba(X)[:,1]
