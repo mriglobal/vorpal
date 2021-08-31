@@ -5,6 +5,7 @@ from Bio import SeqIO
 from skbio import Protein
 import joblib
 from sklearn.model_selection import GridSearchCV
+from sklearn.preprocessing import Binarizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GroupShuffleSplit
 from sklearn.metrics import accuracy_score
@@ -22,6 +23,7 @@ parser.add_argument('-o',default='',help="Prefix for output files.")
 parser.add_argument('-k',default=6,type=int,help="Amino word K size. Default:6")
 parser.add_argument('-j',default=None,help="Amino acid translation dictionary in json format. Default: No re-encoding")
 parser.add_argument('-q',default=None,help="Quantile cutoff for reducing K-mer space. Default: None")
+parser.add_argument('-b'),action='store_true',default=False,help='Flag for feature vector binarization')
 parser.add_argument('-s',type=float,default=0.10,help="Fraction size for group splits. Default: 0.10.")
 parser.add_argument('-n',type=int,default=100,help="Number of splits for groups splits. Default: 100")
 parser.add_argument('-i',type=int,default=500,help="Number of iterations for coordinate descent.")
@@ -111,7 +113,13 @@ if myargs.r:
     complete_table = resample(complete_table,n_samples=myargs.r,stratify=complete_table['groups'])
 
 features = complete_table.drop(['accession','label','groups','species'],axis=1).copy()
-X = features.values
+if not myargs.b:
+    X = features.values
+else:
+    print("Binarizing features.")
+    transformer = Binarizer.fit(X)
+    X = transformer.transform(features.values)
+
 y = complete_table['label']
 groups = complete_table['groups']
 
