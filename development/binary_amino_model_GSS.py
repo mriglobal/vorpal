@@ -117,7 +117,7 @@ if not myargs.b:
     X = features.values
 else:
     print("Binarizing features.")
-    transformer = Binarizer.fit(X)
+    transformer = Binarizer.fit(features.values)
     X = transformer.transform(features.values)
 
 y = complete_table['label']
