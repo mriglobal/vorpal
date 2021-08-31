@@ -56,6 +56,7 @@ for s in seqs:
 if myargs.j:
     with open(myargs.j,'r') as infile:
          amino_alpha = json.load(infile)
+         amino_alpha['X'] = 'X'
 else:
     amino_alpha = {'F':'F',
               'Y':'Y',

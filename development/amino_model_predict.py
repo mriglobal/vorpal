@@ -35,6 +35,7 @@ else:
 
 clf = joblib.load(myargs.model)
 feature_vector = pd.read_pickle(myargs.f)
+initial_counter = Counter({f:0 for f in feature_vector})
 cpus = myargs.p
 
 seqs = list(SeqIO.parse(myargs.seqs,'fasta'))
@@ -76,7 +77,7 @@ else:
 def amino_encode(x):
     return ''.join([amino_alpha[i] for i in x])
 
-feature_counter = {a:Counter() for a in accession_list}
+feature_counter = {a:initial_counter for a in accession_list}
 
 print("Counting {}mers.".format(myargs.k))
 for a in accession_dict.keys():
@@ -87,7 +88,7 @@ for a in accession_dict.keys():
 data = pd.DataFrame(feature_counter)
 
 data = data.fillna(0.0).T
-
+print(data)
 data = data[feature_vector]
 
 data.index.name = "accession"
