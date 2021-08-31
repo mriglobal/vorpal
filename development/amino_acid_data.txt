@@ -1,0 +1,21 @@
+amino	full_name	pka1	pka2	pka3	 pI	prop1	prop2	side_chain	hydrophobic_index	mol_weight	B_factor_loc	B_factor_scale	hydropathy_score	volume
+G	Glycine	2.34	9.6		5.97	Polar_uncharged	Hydrophobic	Unique	0	75.07	-0.537	0.843	-0.4	60.1
+A	Alanine	2.34	9.69		6	Hydrophobic	Hydrophobic	Aliphatic	41	89.1	-0.605	0.718	1.5	88.6
+V	Valine	2.32	9.62		5.96	Hydrophobic	Hydrophobic	Aliphatic	76	117.15	-0.669	0.619	4.2	140
+L	Leucine	2.36	9.6		5.98	Hydrophobic	Hydrophobic	Aliphatic	97	131.18	-0.631	0.681	3.8	166.7
+I	Isoleucine	2.36	9.6		6.02	Hydrophobic	Hydrophobic	Aliphatic	99	131.18	-0.682	0.632	4.5	166.7
+M	Methionine	2.28	9.21		5.74	Hydrophobic	Amphipathic	Aliphatic	74	149.21	-0.043	0.685	1.9	162.9
+P	Proline	1.99	10.6		6.3	Hydrophobic	Hydrophobic	Unique	-46	115.13	-0.271	0.85	-1.6	112.7
+F	Phenylalanine	1.83	9.13		5.48	Hydrophobic	Hydrophobic	Aromatic	100	165.19	-0.719	0.599	2.8	189.9
+W	Tryptophan	2.83	9.39		5.89	Hydrophobic	Amphipathic	Aromatic	97	204.23	-0.727	0.627	-0.9	227.8
+N	Asparagine	2.02	8.8		5.41	Polar_uncharged	Polar	Neutral	-28	132.12	-0.381	0.851	-3.5	114.1
+Q	Glutamine	2.17	9.13		5.65	Polar_uncharged	Polar	Neutral	-10	146.15	-0.369	0.849	-3.5	143.8
+S	Serine	2.21	9.15		5.68	Polar_uncharged	Polar	Neutral	-5	105.09	-0.423	0.841	-0.8	89
+T	Threonine	2.09	9.1		5.6	Polar_uncharged	Polar	Neutral	13	119.12	-0.525	0.758	-0.7	116.1
+Y	Tyrosine	2.2	9.11		5.66	Polar_uncharged	Polar	Aromatic	63	181.19	-0.721	0.615	-1.3	193.6
+C	Cysteine	1.96	8.18		5.07	Polar_uncharged	Polar	Neutral	49	121.16	-0.693	0.668	2.5	108.5
+D	Aspartic acid	1.88	9.6	3.65	2.77	Acidic	Charged	Acidic	-55	133.11	-0.279	0.921	-3.5	111.1
+E	Glutamic acid	2.19	9.67	4.25	3.22	Acidic	Charged	Acidic	-31	147.13	-0.16	0.963	-3.5	138.4
+K	Lysine	2.18	8.95	10.53	9.74	Basic	Charged	Basic	-23	146.19	-0.043	0.912	-3.9	168.6
+R	Arginine	2.17	9.04	12.48	10.76	Basic	Charged	Basic	-14	174.2	-0.448	0.814	-4.5	173.4
+H	Histidine	1.82	9.17	6	7.59	Basic	Polar	Basic	8	155.16	-0.662	0.754	-3.2	153.2
