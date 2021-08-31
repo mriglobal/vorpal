@@ -52,7 +52,7 @@ accession_list = [s.id.split(":")[0].replace("join(",'') for s in seqs]
 accession_dict = {a:[] for a in accession_list}
 
 for s in seqs:
-    if len(s.seq)%3 == 0:
+    if len(s.seq)%3 == 0 and len(s.seq)//3 > myargs.k:
         accession_dict[s.id.split(":")[0].replace("join(",'')].append(str(s.seq.translate()).replace('*',''))
 
 if myargs.j:
