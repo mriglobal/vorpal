@@ -9,7 +9,7 @@ import numpy as np
 import json
 import argparse
 import os
-import logging
+
 
 def is_file(string):
 	if os.path.isfile(string):
@@ -30,6 +30,8 @@ parser.add_argument('-o', '--out_prefix', type=str, default='amino_DBscan_cluste
                     help='prefix of output .json file')
 parser.add_argument('-u', '--umap_neighbors', type=int, default=2,
                     help='number of neighbors for UMAP to consider')
+parser.add_argument('-z', '--random_state', type=int, default=None,
+                    help='optional random state integer')
 
 # Params for DBScan
 parser.add_argument('-m', '--min_samples', type=int, default=2,
@@ -52,6 +54,7 @@ drop_aminos = args.drop_aminos
 aminos_file = args.aminos_file
 out_prefix = args.out_prefix
 umap_neighbors = args.umap_neighbors
+random_state = args.random_state
 min_samples = args.min_samples
 eps = args.eps
 algorithm = args.algorithm
@@ -65,6 +68,7 @@ def run_analysis(cols_to_inc=cols_to_inc,
                  aminos_file=aminos_file,
                  out_prefix=out_prefix,
                  umap_neighbors=umap_neighbors,
+                 random_state=random_state,
                  min_samples=min_samples,
                  eps=eps,
                  algorithm=algorithm,
@@ -98,7 +102,7 @@ def run_analysis(cols_to_inc=cols_to_inc,
     AA_df_scaled = scaler.fit_transform(AA_df)
     AA_df_scaled = pd.DataFrame(AA_df_scaled, columns=AA_df.columns, index=AA_df.index)
     
-    reducer = umap.UMAP(n_neighbors=umap_neighbors)
+    reducer = umap.UMAP(n_neighbors=umap_neighbors, random_state=np.random.RandomState(random_state))
     AA_umap_embedding = reducer.fit_transform(AA_df_scaled)
     clusterer = DBSCAN(eps=eps, 
                        min_samples=min_samples, 
@@ -152,7 +156,7 @@ def run_analysis(cols_to_inc=cols_to_inc,
         if value == '-1':
             assignment_dict[key] = key
     
-    write_dict = {"amino_alpha":assignment_dict}
+    write_dict = assignment_dict
     
     with open(out_prefix+'.json', "w") as outfile:
         json.dump(write_dict, outfile)
@@ -164,12 +168,13 @@ def run_analysis(cols_to_inc=cols_to_inc,
 
 if __name__ == "__main__":
     
-    for i in range(10):
+    for i in range(0,1):
         run_analysis(cols_to_inc=cols_to_inc,
                  drop_aminos=drop_aminos,
                  aminos_file=aminos_file,
                  out_prefix=out_prefix,
                  umap_neighbors=umap_neighbors,
+                 random_state=random_state,
                  min_samples=min_samples,
                  eps=eps,
                  algorithm=algorithm,

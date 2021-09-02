@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import numpy as np
+import re
 from Bio import SeqIO
 from skbio import Protein
 from collections import Counter
@@ -47,7 +48,7 @@ for r in reverse_dict.keys():
 
 def make_pattern(reduced_string):
     return re.compile(''.join([alpha_lookup[c] for c in reduced_string]))
-seqs= list(SeqIO.parse(margs.seqs,'fasta'))
+seqs= list(SeqIO.parse(myargs.seqs,'fasta'))
 
 coefs = pd.read_table(myargs.m,names=['motif','coef'])
 
