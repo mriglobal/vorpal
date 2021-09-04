@@ -9,6 +9,7 @@ import numpy as np
 import json
 import argparse
 import os
+import random
 
 
 def is_file(string):
@@ -21,7 +22,7 @@ parser = argparse.ArgumentParser(description="read 'amino_acid_data.txt' and att
 
 # Params for aminos file/UMAP
 parser.add_argument('-c', '--cols_to_inc', type=str, nargs='+', default=None,
-                    help='list of columns in amino_acid_data.txt to use')
+                    help='list of columns in amino_acid_data.txt to use (or integer of random columns to choose)')
 parser.add_argument('-d', '--drop_aminos', type=str, nargs='+', default=None,
                     help='one-lettered amino to hold out during clustering')
 parser.add_argument('-a', '--aminos_file', type=is_file, default='amino_acid_data.txt',
@@ -81,7 +82,12 @@ def run_analysis(cols_to_inc=cols_to_inc,
     AA_df.set_index('amino', inplace=True)
     
     if cols_to_inc:
+        if cols_to_inc[0].isdigit():
+            cols_to_inc = [AA_df.columns[x] for x in random.sample(range(0, len(AA_df.columns)), int(cols_to_inc[0]))]
+            args.cols_to_inc = cols_to_inc
         AA_df=AA_df.filter(cols_to_inc, axis=1)
+    else:
+        pass #include all columns if none specified
     
     if drop_aminos:
         AA_df=AA_df.drop(drop_aminos, axis=0)
@@ -132,12 +138,21 @@ def run_analysis(cols_to_inc=cols_to_inc,
         
         if g != -1:
             lab = AA_df_scaled.index[ix[0][0]]
-            
+            jitter = random.uniform(0,.5)
+            ax.annotate(", ".join([str(x) for x in AA_df_scaled.index[ix]]),
+                        xy=(AA_umap_embedding[ix[0][0],0],AA_umap_embedding[ix[0][0],1]),
+                        xytext=(AA_umap_embedding[ix[0][0],0]+jitter,AA_umap_embedding[ix[0][0],1]+jitter)) 
         else:
             lab = g
         
         for j in ix[0]:
             assignment_dict[AA_df_scaled.index[j]] = str(lab)
+            if g==-1:
+                jitter_x = random.uniform(-1,1)
+                jitter_y = random.uniform(-1,1)
+                ax.annotate(AA_df_scaled.index[j],
+                            xy=(AA_umap_embedding[j,0], AA_umap_embedding[j,1]),
+                            xytext=(AA_umap_embedding[j,0]+jitter_x,AA_umap_embedding[j,1]+jitter_y)) 
         
         ax.scatter(AA_umap_embedding[ix[0],0], 
                    AA_umap_embedding[ix[0],1], 

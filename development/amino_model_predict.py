@@ -37,7 +37,6 @@ else:
 
 clf = joblib.load(myargs.model)
 feature_vector = pd.read_pickle(myargs.f)
-initial_counter = Counter({f:0 for f in feature_vector})
 cpus = myargs.p
 
 seqs = list(SeqIO.parse(myargs.seqs,'fasta'))
@@ -79,7 +78,7 @@ else:
 def amino_encode(x):
     return ''.join([amino_alpha[i] for i in x])
 
-feature_counter = {a:initial_counter for a in accession_list}
+feature_counter = {a:Counter({f:0 for f in feature_vector}) for a in accession_list}
 
 print("Counting {}mers.".format(myargs.k))
 for a in accession_dict.keys():
@@ -102,6 +101,10 @@ if myargs.m:
     complete_table = complete_table[complete_table['label'] > -1]
     complete_table = complete_table[complete_table['accession'].isin(meta['accession'])]
     X = complete_table.drop(['accession','label','groups','species'],axis=1).copy()
+    if myargs.b:
+        print("Binarizing features.")
+        transformer = Binarizer()
+        X = transformer.fit_transform(X)
     y = complete_table['label']
     print("Model accuracy:")
     print(accuracy_score(y,clf.predict(X)))
