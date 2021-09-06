@@ -60,7 +60,7 @@ feature_table.reset_index(inplace=True)
 
 accession_set = set(feature_table['accession'])
 
-complete_table = pd.merge(feature_table,meta,left_on='accession',right_on='accession')
+complete_table = pd.merge(feature_table,meta[['accession','label','groups']],left_on='accession',right_on='accession')
 print("Dropping ambiguous labels.")
 complete_table = complete_table[complete_table['label'] > -1]
 complete_table = complete_table[complete_table['accession'].isin(accession_set)]
@@ -70,7 +70,7 @@ if myargs.r:
 
 labels = complete_table['label']
 groups = complete_table['groups']
-features = complete_table.drop(['accession','label','groups','species'],axis=1).copy()
+features = complete_table.drop(['accession','label','groups'],axis=1).copy()
 print("Assigning variables.")
 X = features.values
 y = labels
