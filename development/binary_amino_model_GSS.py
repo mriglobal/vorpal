@@ -104,7 +104,7 @@ if myargs.q:
 data.index.name = "accession"
 data.reset_index(inplace=True)
 
-complete_table = pd.merge(feature_table,meta[['accession','label','groups']],left_on='accession',right_on='accession')
+complete_table = pd.merge(data,meta[['accession','label','groups']],left_on='accession',right_on='accession')
 
 complete_table = complete_table[complete_table['label'] > -1]
 complete_table = complete_table[complete_table['accession'].isin(meta['accession'])]
