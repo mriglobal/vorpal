@@ -104,7 +104,7 @@ if myargs.q:
 data.index.name = "accession"
 data.reset_index(inplace=True)
 
-complete_table = pd.merge(data,meta)
+complete_table = pd.merge(feature_table,meta[['accession','label','groups']],left_on='accession',right_on='accession')
 
 complete_table = complete_table[complete_table['label'] > -1]
 complete_table = complete_table[complete_table['accession'].isin(meta['accession'])]
@@ -112,7 +112,7 @@ complete_table = complete_table[complete_table['accession'].isin(meta['accession
 if myargs.r:
     complete_table = resample(complete_table,n_samples=myargs.r,stratify=complete_table['groups'])
 
-features = complete_table.drop(['accession','label','groups','species'],axis=1).copy()
+features = complete_table.drop(['accession','label','groups'],axis=1).copy()
 if not myargs.b:
     X = features.values
 else:
