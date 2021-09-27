@@ -97,10 +97,10 @@ data.index.name = "accession"
 data.reset_index(inplace=True)
 
 if myargs.m:
-    complete_table = pd.merge(data,meta)
+    complete_table = pd.merge(data,meta[['accession','label','groups']])
     complete_table = complete_table[complete_table['label'] > -1]
     complete_table = complete_table[complete_table['accession'].isin(meta['accession'])]
-    X = complete_table.drop(['accession','label','groups','species'],axis=1).copy()
+    X = complete_table.drop(['accession','label','groups'],axis=1).copy()
     if myargs.b:
         print("Binarizing features.")
         transformer = Binarizer()
@@ -111,11 +111,10 @@ if myargs.m:
 
 else:
     X = data.drop(['accession'],axis=1).values
-
-if myargs.b:
-    print("Binarizing features.")
-    transformer = Binarizer()
-    X = transformer.fit_transform(X)
+    if myargs.b:
+        print("Binarizing features.")
+        transformer = Binarizer()
+        X = transformer.fit_transform(X)
 
 data['predict'] = clf.predict(X)
 data['predict_proba'] = clf.predict_proba(X)[:,1]
