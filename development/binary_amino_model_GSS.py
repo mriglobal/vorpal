@@ -19,6 +19,7 @@ parser = argparse.ArgumentParser(description="Takes CDS file of coding regions a
 #command line arguments
 parser.add_argument('--seqs',required=True,help="File containing CDS data.")
 parser.add_argument('-m', required=True,help="Meta data and groups table for genomic records.")
+parser.add_argument('-c',default=[.01,.1,1,10,100,1000,10000],nargs='+',type=float,help="List of Cs to search over. Default: [.01,.1,1,10,100,1000,10000]")
 parser.add_argument('-o',default='',help="Prefix for output files.")
 parser.add_argument('-k',default=6,type=int,help="Amino word K size. Default:6")
 parser.add_argument('-j',default=None,help="Amino acid translation dictionary in json format. Default: No re-encoding")
@@ -123,9 +124,9 @@ else:
 y = complete_table['label']
 groups = complete_table['groups']
 
-gss = GroupShuffleSplit(n_splits=100,test_size=myargs.s)
-parameters = {'C':[.01,.1,1,10,100,1000,10000]}
-logit = LogisticRegression(penalty='l1',verbose=1,solver='liblinear',max_iter=500,tol=.00000001,fit_intercept=False)
+gss = GroupShuffleSplit(n_splits=myargs.n,test_size=split_size)
+parameters = {'C':myargs.c}
+logit = LogisticRegression(penalty='l1',verbose=1,solver='liblinear',max_iter=iterations,tol=tolerance,fit_intercept=False)
 clf = GridSearchCV(logit,parameters,scoring='brier_score_loss',n_jobs=cpus,cv=gss,return_train_score=False)
 print("Fitting model.")
 clf.fit(X,y,groups=groups)
